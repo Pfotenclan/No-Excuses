@@ -171,6 +171,19 @@
   .swap-btn{width:100%; margin-top:16px; padding:11px; border-radius:999px; border:1.5px solid var(--line); background:transparent; color:var(--ink); font-family:var(--font); font-weight:800; font-size:13.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;}
   .swap-btn:focus-visible{outline:2px solid var(--ink); outline-offset:3px;}
   #todayCard .done-box{margin-top:18px;}
+  .act-row{display:flex; gap:8px; margin-top:16px;}
+  .act-row .swap-btn{margin-top:0; flex:1; min-width:0; padding:11px 8px; font-size:13px;}
+  .act-row .swap-btn[hidden]{display:none;}
+  .own-input{width:100%; box-sizing:border-box; padding:12px 14px; border-radius:14px; border:1.5px solid var(--line); background:var(--field); color:var(--ink); font-family:var(--font); font-weight:700; font-size:16px;}
+  .own-input:focus{outline:none; border-color:var(--lagoon);}
+  .own-min{display:flex; align-items:center; gap:10px;}
+  .own-min .own-input{width:110px; text-align:center;}
+  .own-min span{font-size:13.5px; font-weight:800; color:var(--ink-dim);}
+  .own-move{margin-top:6px;}
+  .own-move p{font-size:14px; font-weight:700; line-height:1.5; color:var(--ink); margin:0 0 10px;}
+  .own-tag{display:inline-block; margin-left:6px; font-size:10px; font-weight:800; color:var(--sun1); border:1px solid var(--sun1); padding:1px 7px; border-radius:999px; vertical-align:1px;}
+  .wp-own{font-size:13.5px; color:var(--ink-dim); line-height:1.5; margin:4px 0 0;}
+  .wp-log{margin-top:10px;}
   #todayCard .feedback-box{margin-top:14px;}
   .brand{min-width:0;}
   .brand-kicker.coached.said{max-width:calc(100vw - 196px); text-transform:none; letter-spacing:0; font-size:14px; font-weight:700; color:var(--ink-dim); line-height:1.4; align-items:baseline;}
@@ -555,7 +568,10 @@
       <button type="button" class="link-btn" id="fullToggle" hidden></button>
       <p class="tip-warn" id="lowWarn" hidden></p>
     </div>
+    <div class="act-row">
     <button type="button" class="swap-btn" id="swapBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg><span data-i18n="swapBtn">Swap session</span></button>
+    <button type="button" class="swap-btn" id="ownBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="ownBtn">Did something else</span></button>
+    </div>
     <p id="todayDetail"></p>
     <div class="ex-info" id="exInfo" hidden></div>
     <div class="done-box" id="doneBox">
@@ -792,6 +808,20 @@
       <div class="swap-confirm" id="swapConfirm" hidden></div>
     </div>
   </div>
+  <div class="setup-overlay" id="ownSheet" hidden role="dialog" aria-modal="true" aria-labelledby="ownTitle">
+    <div class="setup-sheet" id="ownInner">
+      <div class="setup-top"><h2 id="ownTitle" data-i18n="ownTitle">Own workout</h2><button type="button" class="link-btn dim" id="ownClose" data-i18n="exClose">Close</button></div>
+      <p class="setup-intro" id="ownIntro"></p>
+      <div id="ownForm">
+        <div class="sq"><div class="sq-label" data-i18n="ownWhat">What did you do?</div><div class="chips wrap" id="ownKind"></div></div>
+        <div class="sq"><div class="sq-label" data-i18n="ownHow">How hard was it?</div><div class="chips" id="ownEffort"></div></div>
+        <div class="sq"><label class="sq-label" for="ownMin" data-i18n="ownLong">How long?</label><div class="own-min"><input type="number" inputmode="numeric" min="5" max="400" step="5" class="own-input" id="ownMin" placeholder="60"><span data-i18n="ownMinUnit">minutes</span></div></div>
+        <div class="sq"><label class="sq-label" for="ownNote" data-i18n="ownNoteLabel">Note (optional)</label><input type="text" class="own-input" id="ownNote" maxlength="120"></div>
+        <button type="button" class="pau-btn" id="ownSave" disabled><span class="pau-word">Pau!</span><span data-i18n="ownSave">Save workout</span></button>
+      </div>
+      <div class="own-move" id="ownMove" hidden></div>
+    </div>
+  </div>
   <div class="setup-overlay" id="setup" hidden role="dialog" aria-modal="true" aria-labelledby="setupTitle">
     <div class="setup-sheet" id="setupSheet">
       <div class="setup-top"><h2 id="setupTitle" data-i18n="setupTitle">Your training setup</h2><button type="button" class="link-btn dim" id="setupCancel" hidden data-i18n="exClose">Close</button></div>
@@ -929,6 +959,12 @@ const T = {
         ["profile", "Profile", "Your name, your goals and your training setup. Make a backup here now and then, so nothing gets lost."]
       ],
       outro:"One rule between us: no excuses. Not to be perfect, but to keep showing up. Rest days count too. I'm a dog, I know how important naps are."},
+    ownBtn:"Did something else", ownTitle:"Own workout", ownWhat:"What did you do?", ownHow:"How hard was it?", ownLong:"How long?", ownMinUnit:"minutes", ownNoteLabel:"Note (optional)", ownNotePh:"e.g. Push day, bench 5×5", ownSave:"Save workout",
+    ownIntroToday:"Planned today: {s}. Tell Loki what you did instead.", ownIntroDay:"{d}: tell Loki what you did.",
+    ownKinds:{run:"Run", strength:"Strength", upper:"Upper body", hyrox:"HYROX / sim", engine:"Conditioning", mobility:"Mobility", sport:"Other sport"},
+    ownEfforts:{easy:"Easy", medium:"Medium", hard:"Hard"}, ownShort:"Own", ownTag:"own", ownDone:"Own workout done", ownInstead:"Instead of: {s}", ownPrefix:"Own workout: ",
+    ownMoveQ:"You skipped the {s}. Move it to another day, or skip it this week?", ownMoveTip:"Loki's tip: move it. ", ownMoveTo:"Move to {d} (instead of {t})", ownSkip:"Skip it this week", ownMoveWhy:{key:"It's your key endurance session of the week.", other:"Keeps your week in balance."},
+    ownLogDay:"+ Log a workout for this day", ownEdit:"Undo", minShort:"min",
     nameLabel:"Your name", bonusKicker:"Extra time? Bonus session", bonusDoneBtn:"Bonus done", bonusDoneText:"Bonus done. Mahalo!", bonusGentle:"🐾 Tired today, so only gentle extras.", bonusDoneKicker:"Bonus done ✓", logBonus:"+ Bonus",
     streak:"{n}-day streak", aloha:"Aloha!",
     pauBtn:"I did it", doneTitle:"Session done", undoDone:"Undo", logDone:"Pau",
@@ -1035,6 +1071,12 @@ const T = {
         ["profile", "Profil", "Dein Name, deine Ziele und dein Trainings-Setup. Mach hier ab und zu ein Backup, damit nichts verloren geht."]
       ],
       outro:"Eine Regel gilt zwischen uns: keine Ausreden. Nicht, um perfekt zu sein, sondern um dranzubleiben. Ruhetage zählen auch. Ich bin ein Hund, ich weiß, wie wichtig ein Nickerchen ist."},
+    ownBtn:"Was anderes gemacht", ownTitle:"Eigenes Training", ownWhat:"Was hast du gemacht?", ownHow:"Wie hart war es?", ownLong:"Wie lange?", ownMinUnit:"Minuten", ownNoteLabel:"Notiz (optional)", ownNotePh:"z. B. Push-Tag, Bankdrücken 5×5", ownSave:"Training speichern",
+    ownIntroToday:"Heute geplant: {s}. Sag Loki, was du stattdessen gemacht hast.", ownIntroDay:"{d}: Sag Loki, was du gemacht hast.",
+    ownKinds:{run:"Laufen", strength:"Kraft", upper:"Oberkörper", hyrox:"HYROX / Simulation", engine:"Kondition", mobility:"Mobility", sport:"Andere Sportart"},
+    ownEfforts:{easy:"Locker", medium:"Mittel", hard:"Hart"}, ownShort:"Eigen", ownTag:"eigen", ownDone:"Eigenes Training geschafft", ownInstead:"Statt: {s}", ownPrefix:"Eigenes Training: ",
+    ownMoveQ:"Du hast die Einheit „{s}“ ausgelassen. Auf einen anderen Tag schieben oder diese Woche weglassen?", ownMoveTip:"Lokis Tipp: verschieben. ", ownMoveTo:"Auf {d} schieben (statt {t})", ownSkip:"Diese Woche weglassen", ownMoveWhy:{key:"Das ist deine wichtigste Ausdauer-Einheit der Woche.", other:"So bleibt deine Woche im Gleichgewicht."},
+    ownLogDay:"+ Training für diesen Tag eintragen", ownEdit:"Rückgängig", minShort:"Min.",
     nameLabel:"Dein Name", bonusKicker:"Extra Zeit? Bonus-Einheit", bonusDoneBtn:"Bonus geschafft", bonusDoneText:"Bonus geschafft. Mahalo!", bonusGentle:"🐾 Heute müde, deshalb nur sanfte Extras.", bonusDoneKicker:"Bonus geschafft ✓", logBonus:"+ Bonus",
     streak:"{n} Tage in Folge", aloha:"Aloha!",
     pauBtn:"Geschafft", doneTitle:"Einheit erledigt", undoDone:"Rückgängig", logDone:"Pau",
@@ -1736,6 +1778,7 @@ function renderToday(){
   document.getElementById("taperCard").hidden = !(phase && phase.key === "phaseTaper");
 
   checkNiggleStreak();
+  renderOwnToday();
   renderDone();
   renderBonus();
   renderMotto();
@@ -2332,7 +2375,15 @@ function renderWeekPreview(){
   const e = readLog()[dayKey(d)];
   const isToday = i === today;
   const scal = !!PLAN_BASE[ty];
+  if(e && e.own){
+    let oh = `<div class="wp-head"><span class="wp-k">${esc((isToday ? t.todayK : weekdayName(d, true)))} · ${esc(t.ownShort)}</span><span class="wp-done">✓ ${esc(t.wpDone)}</span></div><div class="wp-title">${esc(ownTitle(e.own))}</div><p class="wp-own">${esc(ownSummary(e.own))}</p>`;
+    if(!isToday) oh += `<button type="button" class="link-btn dim" id="wpOwnUndo" data-day="${i}">${esc(t.ownEdit)}</button>`;
+    document.getElementById("weekPreview").innerHTML = oh;
+    document.getElementById("wpExInfo").hidden = true;
+    return;
+  }
   let html = `<div class="wp-head"><span class="wp-k">${esc((isToday ? t.todayK : weekdayName(d, true)))} · ${esc(t.typeShort[low ? "rest" : ty])}</span>${e && e.done ? `<span class="wp-done">✓ ${esc(t.wpDone)}</span>` : ""}</div><div class="wp-title">${esc(sess[0])}</div>`;
+  if(i < today && !(e && e.done)) html += `<button type="button" class="link-btn wp-log" id="wpOwnLog" data-day="${i}">${esc(t.ownLogDay)}</button>`;
   if(!isToday){
     if(weekExpanded) html += `<p class="wp-detail">${renderTemplate(sess[1], scal ? ty : null, scal ? getLevel(ty) : 0)}</p>`;
     html += `<button type="button" class="link-btn" id="wpToggle">${esc(weekExpanded ? t.hideDetails : t.showDetails)}</button>`;
@@ -2350,6 +2401,8 @@ document.getElementById("weekStrip").addEventListener("click", e => {
 });
 document.getElementById("weekPreview").addEventListener("click", e => {
   if(e.target.closest("#wpToggle")){ weekExpanded = !weekExpanded; renderWeekPreview(); return; }
+  const ol = e.target.closest("#wpOwnLog"); if(ol){ openOwn(parseInt(ol.dataset.day, 10)); return; }
+  const ou = e.target.closest("#wpOwnUndo"); if(ou){ undoOwn(parseInt(ou.dataset.day, 10)); return; }
   const link = e.target.closest(".ex-link");
   if(link) showExInfo(link.dataset.ex, "wpExInfo");
 });
@@ -2358,6 +2411,175 @@ document.getElementById("wpExInfo").addEventListener("click", e => {
   if(lib){ openInLibrary(lib.dataset.lib); return; }
   if(e.target.closest("[data-close]")) document.getElementById("wpExInfo").hidden = true;
 });
+
+/* ---------- Own workout: "Did something else" ---------- */
+const OWN_KINDS = ["run","strength","upper","hyrox","engine","mobility","sport"];
+const OWN_EFFORTS = ["easy","medium","hard"];
+// Which plan type the own workout counts as, so Loki can plan the next days (tired legs etc.).
+function ownPlanType(o){
+  const hard = o.effort === "hard";
+  switch(o.kind){
+    case "run": return o.effort === "easy" ? "easy" : (o.min >= 75 ? "long" : "run");
+    case "strength": return "strength";
+    case "upper": return "upper";
+    case "hyrox": return "sim";
+    case "engine": return hard ? "sim" : (o.effort === "medium" ? "run" : "easy");
+    case "mobility": return "rest";
+    default: return hard ? "run" : "easy";
+  }
+}
+function ownTitle(o){ return (T[lang].ownKinds[o.kind] || o.kind); }
+function ownSummary(o){
+  const bits = [];
+  if(o.min) bits.push(o.min + " " + T[lang].minShort);
+  bits.push(T[lang].ownEfforts[o.effort] || o.effort);
+  let s = bits.join(" · ");
+  if(o.note) s += " · " + o.note;
+  return s;
+}
+function renderOwnToday(){
+  const e = todayEntry();
+  if(!(e && e.own)) return;
+  const t = T[lang];
+  document.getElementById("heroKicker").textContent = t.todayK + " · " + t.ownShort;
+  document.getElementById("todaySession").textContent = t.ownPrefix + ownTitle(e.own);
+  const planned = e.ownPlanned && e.ownPlanned !== "lowReadiness" ? t.typeShort[e.ownPlanned] : null;
+  document.getElementById("todayDetail").innerHTML = esc(ownSummary(e.own)) + (planned ? `<br><span style="color:var(--ink-dim)">${esc(t.ownInstead.replace("{s}", planned))}</span>` : "");
+  document.getElementById("trimTag").hidden = true;
+  document.getElementById("adjustTag").hidden = true;
+}
+let ownState = null;
+function openOwn(dayIdx){
+  const t = T[lang], today = todayIndex();
+  const isToday = dayIdx === undefined || dayIdx === today;
+  const i = isToday ? today : dayIdx;
+  const d = dayDate(i);
+  const planned = isToday ? todayTypeRaw() : shownType(d);
+  ownState = {day:i, isToday, planned, kind:null, effort:null};
+  document.getElementById("ownIntro").textContent = isToday
+    ? t.ownIntroToday.replace("{s}", t.typeShort[planned === "lowReadiness" ? "rest" : planned] || planned)
+    : t.ownIntroDay.replace("{d}", weekdayName(d, true));
+  document.getElementById("ownKind").innerHTML = OWN_KINDS.map(k => `<button type="button" data-kind="${k}">${esc(t.ownKinds[k])}</button>`).join("");
+  document.getElementById("ownEffort").innerHTML = OWN_EFFORTS.map(k => `<button type="button" data-effort="${k}">${esc(t.ownEfforts[k])}</button>`).join("");
+  document.getElementById("ownMin").value = "";
+  document.getElementById("ownNote").value = "";
+  document.getElementById("ownNote").placeholder = t.ownNotePh;
+  document.getElementById("ownSave").disabled = true;
+  document.getElementById("ownForm").hidden = false;
+  document.getElementById("ownMove").hidden = true;
+  document.getElementById("ownSheet").hidden = false;
+  document.body.style.overflow = "hidden";
+  document.getElementById("ownInner").scrollTop = 0;
+}
+function closeOwn(){
+  document.getElementById("ownSheet").hidden = true;
+  document.body.style.overflow = "";
+  ownState = null;
+}
+function ownReady(){ return ownState && ownState.kind && ownState.effort; }
+function saveOwn(){
+  if(!ownReady()) return;
+  const t = T[lang], s = ownState, k = dayKey(dayDate(s.day));
+  const min = parseInt(document.getElementById("ownMin").value, 10);
+  const own = {kind:s.kind, effort:s.effort};
+  if(min > 0) own.min = Math.min(min, 600);
+  const note = document.getElementById("ownNote").value.trim();
+  if(note) own.note = note.slice(0, 120);
+  try{
+    const log = readLog();
+    const e = log[k] || {noCheck:true, location:trainLoc};
+    e.ownPlanned = (e.own && e.ownPlanned) || s.planned;
+    e.own = own;
+    e.planKey = ownPlanType(own);
+    e.done = true; e.donePlan = "own"; e.doneLevel = 0;
+    log[k] = e;
+    localStorage.setItem("hx_log", JSON.stringify(log));
+  }catch(err){}
+  // Today: ask what happens to the planned session (only if it was a real training and days are left this week).
+  const plannedReal = s.planned && !["rest","lowReadiness"].includes(s.planned) && s.planned !== ownPlanType(own);
+  const future = [];
+  for(let i = s.day + 1; i < 7; i++) future.push(i);
+  if(s.isToday && plannedReal && future.length){
+    showOwnMove(own);
+  } else {
+    finishOwn();
+  }
+}
+function showOwnMove(own){
+  const t = T[lang], s = ownState, did = ownPlanType(own);
+  const pl = t.typeShort[s.planned];
+  const days = [];
+  for(let i = s.day + 1; i < 7; i++){
+    const ty = plannedType(dayDate(i));
+    if(ty === s.planned) continue;
+    days.push({i, ty});
+  }
+  // Loki's pick: the day that had what you already did today (a fair swap), else the next easy/rest day, else the next day.
+  const pick = (days.find(x => x.ty === did) || days.find(x => ["rest","easy"].includes(x.ty)) || days[0] || {}).i;
+  const why = ["long","sim"].includes(s.planned) ? t.ownMoveWhy.key : t.ownMoveWhy.other;
+  const box = document.getElementById("ownMove");
+  box.innerHTML = `<p>${esc(t.ownMoveQ.replace("{s}", lang === "de" ? pl : pl.toLowerCase()))}</p>` +
+    (days.length ? `<div class="swap-tip"><span class="pb">${PAW_SVG}</span><div><b>${esc(t.ownMoveTip)}</b><span class="why">${esc(why)}</span></div></div>` : "") +
+    days.map(x => `<button type="button" class="swap-opt${x.i === pick ? " tip" : ""}" data-move="${x.i}"><span class="so-head"><span class="so-k">${esc(weekdayName(dayDate(x.i), true))}</span>${x.i === pick ? `<span class="so-tip">${esc(t.swapTipTag)} ${PAW_SVG}</span>` : ""}</span><span class="so-title">${esc(t.ownMoveTo.replace("{d}", weekdayName(dayDate(x.i), false)).replace("{t}", t.typeShort[x.ty]))}</span></button>`).join("") +
+    `<button type="button" class="btn-secondary" style="width:100%" data-move="skip">${esc(t.ownSkip)}</button>`;
+  document.getElementById("ownForm").hidden = true;
+  box.hidden = false;
+  document.getElementById("ownInner").scrollTop = 0;
+}
+function finishOwn(){
+  closeOwn();
+  if(!document.getElementById("todayCard").hidden) renderToday();
+  renderHistory(); renderWeek();
+  celebrate();
+}
+function undoOwnMove(e){
+  if(!e || !e.ownMoved) return;
+  const ov = readOverrides();
+  if(e.ownMoved.prev) ov[e.ownMoved.key] = e.ownMoved.prev; else delete ov[e.ownMoved.key];
+  saveOverrides(ov);
+  delete e.ownMoved;
+}
+function undoOwn(dayIdx){
+  try{
+    const log = readLog(), k = dayKey(dayDate(dayIdx)), e = log[k];
+    if(e){
+      undoOwnMove(e);
+      if(e.noCheck && typeof e.readiness !== "number") delete log[k];
+      else { e.planKey = e.ownPlanned || e.planKey; delete e.own; delete e.ownPlanned; delete e.done; delete e.donePlan; delete e.doneLevel; }
+      localStorage.setItem("hx_log", JSON.stringify(log));
+    }
+  }catch(err){}
+  if(!document.getElementById("todayCard").hidden) renderToday();
+  renderHistory(); renderWeek();
+}
+document.getElementById("ownBtn").addEventListener("click", ()=> openOwn());
+document.getElementById("ownClose").addEventListener("click", ()=>{
+  // Closing on the move question keeps the workout; the planned session simply stays where it is.
+  const saved = !document.getElementById("ownMove").hidden;
+  if(saved) finishOwn(); else closeOwn();
+});
+document.getElementById("ownSheet").addEventListener("click", e=>{
+  if(e.target.id === "ownSheet"){ document.getElementById("ownClose").click(); return; }
+  const kb = e.target.closest("[data-kind]"), eb = e.target.closest("[data-effort]"), mv = e.target.closest("[data-move]");
+  if(kb && ownState){ ownState.kind = kb.dataset.kind; document.querySelectorAll("#ownKind button").forEach(b => b.classList.toggle("active", b === kb)); }
+  if(eb && ownState){ ownState.effort = eb.dataset.effort; document.querySelectorAll("#ownEffort button").forEach(b => b.classList.toggle("active", b === eb)); }
+  if(kb || eb){ document.getElementById("ownSave").disabled = !ownReady(); return; }
+  if(mv && ownState){
+    if(mv.dataset.move !== "skip"){
+      const ov = readOverrides(), mk = dayKey(dayDate(parseInt(mv.dataset.move, 10)));
+      // Remember what was there, so Undo can put the week back.
+      try{
+        const log = readLog(), k = dayKey(dayDate(ownState.day));
+        if(log[k]){ log[k].ownMoved = {key:mk, prev:ov[mk] || null}; localStorage.setItem("hx_log", JSON.stringify(log)); }
+      }catch(err){}
+      ov[mk] = ownState.planned;
+      saveOverrides(ov);
+    }
+    finishOwn();
+  }
+});
+document.getElementById("ownSave").addEventListener("click", saveOwn);
+document.addEventListener("keydown", e => { if(e.key === "Escape" && !document.getElementById("ownSheet").hidden) document.getElementById("ownClose").click(); });
 
 /* Pau! — mark today's session as done */
 function readLog(){ try{ return JSON.parse(localStorage.getItem("hx_log") || "{}"); }catch(e){ return {}; } }
@@ -2370,11 +2592,13 @@ function renderDone(){
   document.getElementById("pauBtn").hidden = done;
   document.getElementById("doneBanner").hidden = !done;
   document.getElementById("swapBtn").hidden = done;
-  document.getElementById("feedbackBox").hidden = !(done && PLAN_BASE[lastPlanKey]);
+  document.getElementById("ownBtn").hidden = done;
+  document.getElementById("feedbackBox").hidden = !(done && PLAN_BASE[lastPlanKey] && !e.own);
+  document.querySelector("#doneBanner .done-text").textContent = done && e.own ? T[lang].ownDone : T[lang].doneTitle;
   if(done){
-    const lvl = e.doneLevel || 0;
+    const lvl = e.own ? 0 : (e.doneLevel || 0);
     document.getElementById("doneStars").textContent = starStr(lvl);
-    document.getElementById("doneSub").textContent = lvl > 0 ? T[lang].doneSubStar : T[lang].doneSub;
+    document.getElementById("doneSub").textContent = e.own ? ownSummary(e.own) : (lvl > 0 ? T[lang].doneSubStar : T[lang].doneSub);
   }
 }
 function celebrate(){
@@ -2410,9 +2634,14 @@ document.getElementById("pauBtn").addEventListener("click", ()=>{
 document.getElementById("undoDoneBtn").addEventListener("click", ()=>{
   try{
     const log = readLog(), k = dayKey();
-    if(log[k]){ delete log[k].done; delete log[k].doneLevel; delete log[k].donePlan; localStorage.setItem("hx_log", JSON.stringify(log)); }
+    if(log[k]){
+      if(log[k].own){ undoOwnMove(log[k]); log[k].planKey = log[k].ownPlanned || log[k].planKey; delete log[k].own; delete log[k].ownPlanned; }
+      delete log[k].done; delete log[k].doneLevel; delete log[k].donePlan;
+      localStorage.setItem("hx_log", JSON.stringify(log));
+    }
   }catch(e){}
-  renderDone(); renderHistory(); renderWeek();
+  if(!document.getElementById("todayCard").hidden) renderToday(); else renderDone();
+  renderHistory(); renderWeek();
 });
 
 /* Tap an exercise in today's session: show its description inline */
@@ -2734,7 +2963,7 @@ function renderSparkline(){
   const svg = document.getElementById("readinessSparkline");
   let log = {};
   try{ log = JSON.parse(localStorage.getItem("hx_log") || "{}"); }catch(e){}
-  const dates = Object.keys(log).sort().slice(-14);
+  const dates = Object.keys(log).filter(d => typeof log[d].readiness === "number").sort().slice(-14);
   if(dates.length < 2){ svg.innerHTML = ""; return; }
   const vals = dates.map(d=>log[d].readiness);
   const w=280, h=40;
@@ -2802,7 +3031,8 @@ document.getElementById("logBtn").addEventListener("click", ()=>{
     const dateKey = dayKey();
     const log = JSON.parse(localStorage.getItem("hx_log") || "{}");
     const prev = log[dateKey] || {};
-    log[dateKey] = {...prev, ...checkin, readiness:computeReadiness(), location:trainLoc, planKey:lastPlanKey};
+    log[dateKey] = {...prev, ...checkin, readiness:computeReadiness(), location:trainLoc, planKey:prev.own ? prev.planKey : lastPlanKey};
+    delete log[dateKey].noCheck;
     localStorage.setItem("hx_log", JSON.stringify(log));
     renderHistory();
   }catch(e){}
@@ -2832,17 +3062,17 @@ function renderHistory(){
   list.innerHTML = "";
   dates.forEach(dateKey=>{
     const e = log[dateKey];
-    const r = e.readiness;
-    const color = r>=70 ? "var(--good)" : r>=40 ? "var(--mid)" : "var(--low)";
+    const r = typeof e.readiness === "number" ? e.readiness : null;
+    const color = r === null ? "var(--line)" : r>=70 ? "var(--good)" : r>=40 ? "var(--mid)" : "var(--low)";
     const locText = T[lang][locMap[e.location]] || e.location || "";
     const S = T[lang].feelScale;
-    const parts = e.mode === "feel" && e.fs
+    const parts = e.noCheck ? [] : e.mode === "feel" && e.fs
       ? [`${T[lang].sumSleep} ${S.fs[e.fs - 1]}`, `${T[lang].sumEnergy} ${S.fe[(e.fe || 3) - 1]}`]
       : [`${T[lang].sleepLabel} ${e.sleep}`, `${recLabel(e.brand)} ${e.recovery}`];
     const row = document.createElement("div");
     row.className = "history-row";
-    row.innerHTML = `<div class="history-badge" style="background:${color}">${r}</div>
-      <div class="history-main"><div class="history-date">${dateKey}${e.done ? `<span class="h-done">✓ ${T[lang].logDone}</span>` : ""}${e.done && e.doneLevel > 0 ? `<span class="h-stars" aria-label="${e.doneLevel} ★">${starStr(e.doneLevel)}</span>` : ""}${e.bonusDone ? `<span class="h-bonus">${T[lang].logBonus}</span>` : ""}</div><div class="history-meta">${parts.join(" · ")}</div></div>
+    row.innerHTML = `<div class="history-badge" style="background:${color}">${r === null ? "–" : r}</div>
+      <div class="history-main"><div class="history-date">${dateKey}${e.done ? `<span class="h-done">✓ ${T[lang].logDone}</span>` : ""}${e.done && e.doneLevel > 0 ? `<span class="h-stars" aria-label="${e.doneLevel} ★">${starStr(e.doneLevel)}</span>` : ""}${e.own ? `<span class="own-tag">${T[lang].ownTag}</span>` : ""}${e.bonusDone ? `<span class="h-bonus">${T[lang].logBonus}</span>` : ""}</div><div class="history-meta">${e.own ? esc(ownTitle(e.own) + " · " + ownSummary(e.own)) + (parts.length ? "<br>" : "") : ""}${parts.join(" · ")}</div></div>
       <div class="history-loc">${locText}</div>`;
     list.appendChild(row);
   });
@@ -2885,8 +3115,8 @@ function renderWeek(){
     div.setAttribute("aria-pressed", String(sel));
     const dayLabel = T[lang].days[i];
     const shown = shownType(dateObj);
-    const typeLabel = T[lang].typeShort[shown === "lowReadiness" ? "rest" : shown] || T[lang].typeShort[type];
     const wlog = readLog()[dayKey(dateObj)];
+    const typeLabel = wlog && wlog.own ? T[lang].ownShort : (T[lang].typeShort[shown === "lowReadiness" ? "rest" : shown] || T[lang].typeShort[type]);
     div.innerHTML = `<div class="d">${dayLabel}</div><div class="n">${dateObj.getDate()}</div><div class="t">${typeLabel}</div>${wlog && wlog.done ? `<span class="w-check" aria-label="done">✓</span>` : ""}`;
     strip.appendChild(div);
   });
