@@ -184,6 +184,16 @@
   .own-tag{display:inline-block; margin-left:6px; font-size:10px; font-weight:800; color:var(--sun1); border:1px solid var(--sun1); padding:1px 7px; border-radius:999px; vertical-align:1px;}
   .wp-own{font-size:13.5px; color:var(--ink-dim); line-height:1.5; margin:4px 0 0;}
   .wp-log{margin-top:10px;}
+  .wp-actions{display:flex; gap:8px; margin-top:12px;}
+  .wp-actions .pau-btn{flex:1; padding:10px 12px; gap:7px; font-size:13px;}
+  .wp-actions .pau-btn .pau-word{font-size:17px;}
+  .wp-actions .swap-btn{flex:1; margin-top:0; padding:10px 8px; font-size:13px;}
+  .wp-actions + .link-btn{display:inline-block; margin-top:12px;}
+  .yd-card{padding:16px 18px;}
+  .yd-k{font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--sun1);}
+  .yd-title{font-size:18px; font-weight:800; color:var(--ink); margin:3px 0 2px;}
+  .yd-q{font-size:13.5px; color:var(--ink-dim); margin:0;}
+  .yd-skip{display:block; margin:10px auto 0;}
   #todayCard .feedback-box{margin-top:14px;}
   .brand{min-width:0;}
   .brand-kicker.coached.said{max-width:calc(100vw - 196px); text-transform:none; letter-spacing:0; font-size:14px; font-weight:700; color:var(--ink-dim); line-height:1.4; align-items:baseline;}
@@ -550,6 +560,7 @@
     </div>
   </section>
 
+  <section class="card yd-card" id="ydCard" hidden aria-live="polite"></section>
   <section class="card hero" id="todayCard" hidden>
     <div class="hero-top">
       <div class="hero-text">
@@ -964,7 +975,7 @@ const T = {
     ownKinds:{run:"Run", strength:"Strength", upper:"Upper body", hyrox:"HYROX / sim", engine:"Conditioning", mobility:"Mobility", sport:"Other sport"},
     ownEfforts:{easy:"Easy", medium:"Medium", hard:"Hard"}, ownShort:"Own", ownTag:"own", ownDone:"Own workout done", ownInstead:"Instead of: {s}", ownPrefix:"Own workout: ",
     ownMoveQ:"You skipped the {s}. Move it to another day, or skip it this week?", ownMoveTip:"Loki's tip: move it. ", ownMoveTo:"Move to {d} (instead of {t})", ownSkip:"Skip it this week", ownMoveWhy:{key:"It's your key endurance session of the week.", other:"Keeps your week in balance."},
-    ownLogDay:"+ Log a workout for this day", ownEdit:"Undo", minShort:"min",
+    ownLogDay:"+ Log a workout for this day", ydK:"Yesterday", ydQ:"Not logged yet. Did you train?", pauPast:"Done as planned", ydSkip:"No, I rested", wpUndo:"Undo", ownShortBtn:"Something else", ownEdit:"Undo", minShort:"min",
     nameLabel:"Your name", bonusKicker:"Extra time? Bonus session", bonusDoneBtn:"Bonus done", bonusDoneText:"Bonus done. Mahalo!", bonusGentle:"🐾 Tired today, so only gentle extras.", bonusDoneKicker:"Bonus done ✓", logBonus:"+ Bonus",
     streak:"{n}-day streak", aloha:"Aloha!",
     pauBtn:"I did it", doneTitle:"Session done", undoDone:"Undo", logDone:"Pau",
@@ -1076,7 +1087,7 @@ const T = {
     ownKinds:{run:"Laufen", strength:"Kraft", upper:"Oberkörper", hyrox:"HYROX / Simulation", engine:"Kondition", mobility:"Mobility", sport:"Andere Sportart"},
     ownEfforts:{easy:"Locker", medium:"Mittel", hard:"Hart"}, ownShort:"Eigen", ownTag:"eigen", ownDone:"Eigenes Training geschafft", ownInstead:"Statt: {s}", ownPrefix:"Eigenes Training: ",
     ownMoveQ:"Du hast die Einheit „{s}“ ausgelassen. Auf einen anderen Tag schieben oder diese Woche weglassen?", ownMoveTip:"Lokis Tipp: verschieben. ", ownMoveTo:"Auf {d} schieben (statt {t})", ownSkip:"Diese Woche weglassen", ownMoveWhy:{key:"Das ist deine wichtigste Ausdauer-Einheit der Woche.", other:"So bleibt deine Woche im Gleichgewicht."},
-    ownLogDay:"+ Training für diesen Tag eintragen", ownEdit:"Rückgängig", minShort:"Min.",
+    ownLogDay:"+ Training für diesen Tag eintragen", ydK:"Gestern", ydQ:"Noch nicht eingetragen. Hast du trainiert?", pauPast:"Wie geplant gemacht", ydSkip:"Nein, Pause gemacht", wpUndo:"Rückgängig", ownShortBtn:"Was anderes", ownEdit:"Rückgängig", minShort:"Min.",
     nameLabel:"Dein Name", bonusKicker:"Extra Zeit? Bonus-Einheit", bonusDoneBtn:"Bonus geschafft", bonusDoneText:"Bonus geschafft. Mahalo!", bonusGentle:"🐾 Heute müde, deshalb nur sanfte Extras.", bonusDoneKicker:"Bonus geschafft ✓", logBonus:"+ Bonus",
     streak:"{n} Tage in Folge", aloha:"Aloha!",
     pauBtn:"Geschafft", doneTitle:"Einheit erledigt", undoDone:"Rückgängig", logDone:"Pau",
@@ -2383,7 +2394,9 @@ function renderWeekPreview(){
     return;
   }
   let html = `<div class="wp-head"><span class="wp-k">${esc((isToday ? t.todayK : weekdayName(d, true)))} · ${esc(t.typeShort[low ? "rest" : ty])}</span>${e && e.done ? `<span class="wp-done">✓ ${esc(t.wpDone)}</span>` : ""}</div><div class="wp-title">${esc(sess[0])}</div>`;
-  if(i < today && !(e && e.done)) html += `<button type="button" class="link-btn wp-log" id="wpOwnLog" data-day="${i}">${esc(t.ownLogDay)}</button>`;
+  if(i < today && !(e && e.done) && !low && ty !== "rest") html += pastActions(i);
+  else if(i < today && !(e && e.done)) html += `<button type="button" class="link-btn wp-log" id="wpOwnLog" data-day="${i}">${esc(t.ownLogDay)}</button>`;
+  if(i < today && e && e.done) html += `<button type="button" class="link-btn dim wp-log" data-pastundo="${i}">${esc(t.wpUndo)}</button>`;
   if(!isToday){
     if(weekExpanded) html += `<p class="wp-detail">${renderTemplate(sess[1], scal ? ty : null, scal ? getLevel(ty) : 0)}</p>`;
     html += `<button type="button" class="link-btn" id="wpToggle">${esc(weekExpanded ? t.hideDetails : t.showDetails)}</button>`;
@@ -2403,6 +2416,9 @@ document.getElementById("weekPreview").addEventListener("click", e => {
   if(e.target.closest("#wpToggle")){ weekExpanded = !weekExpanded; renderWeekPreview(); return; }
   const ol = e.target.closest("#wpOwnLog"); if(ol){ openOwn(parseInt(ol.dataset.day, 10)); return; }
   const ou = e.target.closest("#wpOwnUndo"); if(ou){ undoOwn(parseInt(ou.dataset.day, 10)); return; }
+  const pp = e.target.closest("[data-pastpau]"); if(pp){ markPlannedDone(parseInt(pp.dataset.pastpau, 10)); return; }
+  const po = e.target.closest("[data-pastown]"); if(po){ openOwn(parseInt(po.dataset.pastown, 10)); return; }
+  const pu = e.target.closest("[data-pastundo]"); if(pu){ undoPlannedDone(parseInt(pu.dataset.pastundo, 10)); return; }
   const link = e.target.closest(".ex-link");
   if(link) showExInfo(link.dataset.ex, "wpExInfo");
 });
@@ -2410,6 +2426,57 @@ document.getElementById("wpExInfo").addEventListener("click", e => {
   const lib = e.target.closest("[data-lib]");
   if(lib){ openInLibrary(lib.dataset.lib); return; }
   if(e.target.closest("[data-close]")) document.getElementById("wpExInfo").hidden = true;
+});
+
+/* ---------- Log a missed Pau! afterwards (past days + yesterday reminder) ---------- */
+function pastActions(i){
+  const t = T[lang];
+  return `<div class="wp-actions"><button type="button" class="pau-btn" data-pastpau="${i}"><span class="pau-word">Pau!</span><span>${esc(t.pauPast)}</span></button>` +
+    `<button type="button" class="swap-btn" data-pastown="${i}">${esc(t.ownShortBtn)}</button></div>`;
+}
+function markPlannedDone(i){
+  const d = dayDate(i), k = dayKey(d);
+  try{
+    const log = readLog(), ty = shownType(d);
+    const e = log[k] || {noCheck:true, location:trainLoc, planKey:ty};
+    e.done = true; e.donePlan = ty;
+    e.doneLevel = PLAN_BASE[ty] ? getLevel(ty) : 0;
+    log[k] = e;
+    localStorage.setItem("hx_log", JSON.stringify(log));
+  }catch(err){}
+  renderHistory(); renderWeek();
+  celebrate();
+}
+function undoPlannedDone(i){
+  const k = dayKey(dayDate(i));
+  try{
+    const log = readLog(), e = log[k];
+    if(e && e.own){ undoOwn(i); return; }
+    if(e){
+      if(e.noCheck && typeof e.readiness !== "number") delete log[k];
+      else { delete e.done; delete e.donePlan; delete e.doneLevel; }
+      localStorage.setItem("hx_log", JSON.stringify(log));
+    }
+  }catch(err){}
+  renderHistory(); renderWeek();
+}
+// Reminder on Today: yesterday was a training day but nothing was logged (also works Monday → last Sunday).
+function renderYesterday(){
+  const card = document.getElementById("ydCard");
+  if(!card) return;
+  const t = T[lang], i = todayIndex() - 1, d = dayDate(i), k = dayKey(d);
+  const e = readLog()[k], ty = shownType(d);
+  let skipped = null; try{ skipped = localStorage.getItem("hx_yd_skip"); }catch(err){}
+  if((e && e.done) || ty === "rest" || ty === "lowReadiness" || skipped === k){ card.hidden = true; card.innerHTML = ""; return; }
+  const sess = getSession(ty, trainLoc)[lang];
+  card.innerHTML = `<div class="yd-k">${esc(t.ydK)} · ${esc(t.typeShort[ty] || ty)}</div><div class="yd-title">${esc(sess[0])}</div><p class="yd-q">${esc(t.ydQ)}</p>` +
+    pastActions(i) + `<button type="button" class="link-btn dim yd-skip" data-ydskip="${k}">${esc(t.ydSkip)}</button>`;
+  card.hidden = false;
+}
+document.getElementById("ydCard").addEventListener("click", e => {
+  const pp = e.target.closest("[data-pastpau]"); if(pp){ markPlannedDone(parseInt(pp.dataset.pastpau, 10)); return; }
+  const po = e.target.closest("[data-pastown]"); if(po){ openOwn(parseInt(po.dataset.pastown, 10)); return; }
+  const sk = e.target.closest("[data-ydskip]"); if(sk){ try{ localStorage.setItem("hx_yd_skip", sk.dataset.ydskip); }catch(err){} renderYesterday(); }
 });
 
 /* ---------- Own workout: "Did something else" ---------- */
@@ -3100,6 +3167,7 @@ function updateWeekSlider(){
 }
 
 function renderWeek(){
+  renderYesterday();
   const idx = todayIndex();
   const monday = getMonday();
   const strip = document.getElementById("weekStrip");
